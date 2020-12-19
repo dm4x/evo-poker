@@ -1,8 +1,8 @@
 package ru.dm4x.evopoker
 
-import ru.dm4x.evopoker.entity.{Card, Hand}
+import ru.dm4x.evopoker.entity.{Card, Combo, Empty, Flush, FourOfAKind, FullHouse, Hand, OnePair, Straight, StraightFlush, ThreeOfAKind, TwoPair}
 
-import scala.collection.mutable.ArrayBuffer
+import scala.annotation.tailrec
 
 class StrengthCalculator {
 
@@ -12,76 +12,78 @@ class StrengthCalculator {
    * @return total strength of cards in hand
    */
   def evaluate(hands: List[Hand]): List[Hand] = {
-    hands
+    hands.sortBy(_.strength)
+      .map(flush)
+      .map(onePairTwoPairFourOfAKindFullHouse(_, 0))
+      .map(threeOfAKindFullHouse(_, 0))
+      .map(straight)
       .map(calcHandStrength)
-      .map(checkFlush)
-      .map(checkThreeOfAKind)
-      .map(checkTwoPair)
-      .map(checkOnePair)
-
   }
 
   private def calcHandStrength(hand: Hand): Hand = {
-    Hand(hand.inHand, hand.cards.map(calcCardStrength))
-  }
-
-  private def calcCardStrength(card: Card): Card = card.rank match {
-    case 'A' => Card(card.rank, card.suit, strength = 14)
-    case 'K' => Card(card.rank, card.suit, strength = 13)
-    case 'Q' => Card(card.rank, card.suit, strength = 12)
-    case 'J' => Card(card.rank, card.suit, strength = 11)
-    case 'T' => Card(card.rank, card.suit, strength = 10)
-    case '9' => Card(card.rank, card.suit, strength = 9)
-    case '8' => Card(card.rank, card.suit, strength = 8)
-    case '7' => Card(card.rank, card.suit, strength = 7)
-    case '6' => Card(card.rank, card.suit, strength = 6)
-    case '5' => Card(card.rank, card.suit, strength = 5)
-    case '4' => Card(card.rank, card.suit, strength = 4)
-    case '3' => Card(card.rank, card.suit, strength = 3)
-    case '2' => Card(card.rank, card.suit, strength = 2)
-    case _ => Card(card.rank, card.suit)
-  }
-
-  private def checkFlush(hand: Hand): Hand = {
-    if (hand.cards.count(_.suit == 'h') == 5
-      ||hand.cards.count(_.suit == 'd') == 5
-      ||hand.cards.count(_.suit == 'c') == 5
-      ||hand.cards.count(_.suit == 's') == 5) {
-      Hand(hand.inHand, hand.cards, hasFlush = true)
-    } else Hand(hand.inHand, hand.cards)
-  }
-
-  private def checkThreeOfAKind(hand: Hand): Hand = {
-    hand.cards.count(_.rank == rank).equals(3)
-  }
-
-  private def checkOnePair(hand: Hand): Hand = hand.cards.count(_.rank == rank).equals(2)
-
-  private def checkTwoPair(hand: Hand): Hand = {
-    hand.cards.count(_.rank == rank).equals(4)
+    // считаем силу руки, сила карт уже посчитана
 
   }
 
 
 
-  def haveStraightFlush: Boolean = isStraight && isFlush
+  private def flush(hand: Hand): Hand = {
+    val maxRank = hand.cards.maxBy(_.rank).rank
+    val isFlush = hand.cards.map(_.suit).map(isFlushSuit(hand, _)).find(_ == true).getOrElse(false)
+    (hand.combo, isFlush) match {
+      case (Straight(_), true) => Hand(hand.inHand, hand.cards, hand.strength, StraightFlush(maxRank))
+      case (Straight(_), false) => Hand(hand.inHand, hand.cards, hand.strength, Straight(maxRank))
+      case (_, true) => Hand(hand.inHand, hand.cards, hand.strength, Flush(maxRank))
+      case _ => hand
+    }
+  }
 
-  def haveFullHouse: Boolean = isOnePair && isThreeOfAKind && notTheSameRank
+  private def isFlushSuit(hand: Hand, suit: Char): Boolean = {
+    if (hand.cards.count(_.suit == suit) == 5) true
+    else false
+  }
 
-  def haveFourOfAKind: Boolean = isTwoPair && notTheSameRank
+  private def straight(hand: Hand): Hand = {
+    val maxRank = hand.cards.maxBy(_.rank).rank
+    val isStraight = isStraightSuit(0, hand.cards.map(_.rank), maxRank, result = false)
+    (hand.combo, isStraight) match {
+      case (Flush(_), true) => Hand(hand.inHand, hand.cards, hand.strength, StraightFlush(maxRank))
+      case (Flush(_), false) => Hand(hand.inHand, hand.cards, hand.strength, Flush(maxRank))
+      case (_, true) => Hand(hand.inHand, hand.cards, hand.strength, Straight(maxRank))
+      case _ => hand
+    }
+  }
 
-  private def notTheSameRank: Boolean = pairRank != threeRank
+  @tailrec
+  private def isStraightSuit(prev: Int, ranks: List[Int], highRank: Int, result: Boolean): Boolean = {
+    if (ranks.head == highRank) result
+    else if (ranks.head - prev == 1) isStraightSuit(ranks.head, ranks.tail, highRank, result = true)
+    else false
+  }
 
-  private def handStrength(handRanksSum: Long): Long = {
-    if (haveStraightFlush) {100_000_000 * handRanksSum}
-    else if (haveFourOfAKind) {10_000_000 * handRanksSum}
-    else if (haveFullHouse) {1_000_000 * handRanksSum}
-    else if (haveFlush) {100_000 * handRanksSum}
-    else if (haveStraight) {10_000 * handRanksSum}
-    else if (haveThreeOfAKind) {1000 * handRanksSum}
-    else if (haveTwoPair) {100 * handRanksSum}
-    else if (haveOnePair) {10 * handRanksSum}
-    else 1
+  @tailrec
+  private def threeOfAKindFullHouse(hand: Hand, rank: Int): Hand = {
+      if (rank == 15) hand
+      else if (hand.cards.count(_.rank == rank).equals(3)) {
+        threeOfAKindFullHouse(Hand(hand.inHand, hand.cards, hand.strength, fullHouse(hand, rank)), rank + 1)
+      }
+      else threeOfAKindFullHouse(hand, rank + 1)
+  }
+
+  @tailrec
+  private def onePairTwoPairFourOfAKindFullHouse(hand: Hand, rank: Int): Hand = {
+    if (rank == 15) hand
+    else if (hand.cards.count(_.rank == rank).equals(2)) {
+      onePairTwoPairFourOfAKindFullHouse(Hand(hand.inHand, hand.cards, hand.strength, fullHouse(hand, rank)), rank + 1)
+    }
+    else onePairTwoPairFourOfAKindFullHouse(hand, rank + 1)
+  }
+
+  private def fullHouse (hand: Hand, rank: Int): Combo = hand.combo match {
+    case ThreeOfAKind(_) => FullHouse(hand.combo.rank, rank)
+    case OnePair(_) if hand.combo.rank == rank => FourOfAKind(rank)
+    case OnePair(_) => TwoPair(hand.combo.rank, rank)
+    case _ => hand.combo
   }
 
 }
