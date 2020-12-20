@@ -63,8 +63,8 @@ class SolverTest extends AnyFunSuite {
 
   test(s"$testingClassName: process: four > fh") {
     assert(
-      testingClass.process("five-card-draw 4d4s4c4hAh 4d4s4c2h2c")
-        equals "4d4s4c2h2c 4d4s4c4hAh")
+      testingClass.process("five-card-draw 2d2s2c2hAh 4d4s4c2h2c")
+        equals "4d4s4c2h2c 2d2s2c2hAh")
   }
 
   test(s"$testingClassName: process: sf > four") {
