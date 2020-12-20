@@ -120,7 +120,9 @@ class StrengthCalculator {
   }
 
   private def twoPairs(hand: Hand, ranks: List[Int]): Hand = hand.combo match {
-    case OnePair(_, _) if hand.combo.rank != ranks.head => hand.copy(combo = TwoPair(hand.combo.rank, ranks.head), backHand = hand.backHand.filter(_.rank != ranks.head))
+    case OnePair(_, _) if hand.combo.rank != ranks.head && hand.backHand.count(_.rank == ranks.head).equals(2) => hand.copy(
+      combo = TwoPair(hand.combo.rank, ranks.head),
+      backHand = hand.backHand.filter(_.rank != ranks.head))
     case _ => hand
   }
 

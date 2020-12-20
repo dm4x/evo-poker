@@ -114,4 +114,17 @@ class SolverTest extends AnyFunSuite {
       testingClass.process("five-card-draw 8d8s8c2h2c 4d4s4c2s2d")
         equals "4d4s4c2s2d 8d8s8c2h2c")
   }
+
+  test(s"$testingClassName: process: some random board") {
+    assert(
+      testingClass.process("five-card-draw 7h4s4h8c9h Tc5h6dAc5c Kd9sAs3cQs Ah9d6s2cKh 4c8h2h6c9c")
+        equals "4c8h2h6c9c Ah9d6s2cKh Kd9sAs3cQs 7h4s4h8c9h Tc5h6dAc5c")
+  }
+
+  test(s"$testingClassName: process: some random board with equity") {
+    assert(
+      testingClass.process("five-card-draw 7h4s4h8c9h 7c4d4c8h9d Kd9sAs3cQs Ah9d6s2cKh 4c8h2h6c9c")
+        equals "4c8h2h6c9c Ah9d6s2cKh Kd9sAs3cQs 7c4d4c8h9d 7h4s4h8c9h")
+  }
+
 }
