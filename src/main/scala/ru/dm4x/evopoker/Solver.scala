@@ -21,7 +21,7 @@ object Solver {
 
   def fiveCard(inHands: List[String]): Option[String] = {
     val hands: List[Hand] = inHands.map(splitHand)
-    val s = new StrengthCalculator().evaluate(hands).map(_.inHand).toString()
+    val s = new StrengthCalculator().evaluate(hands).map(_.inHand).mkString(" ")
     Option(s)
   }
 

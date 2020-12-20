@@ -14,8 +14,8 @@ class StrengthCalculator {
   def evaluate(hands: List[Hand]): List[Hand] = {
     hands
       .map(flush)
-      .map(onePairTwoPairFourOfAKindFullHouse(_, 0))
-      .map(threeOfAKindFullHouse(_, 0))
+      .map(hand => onePairTwoPairFourOfAKindFullHouse(hand, hand.cards.map(_.rank).distinct.sorted))
+      .map(hand => threeOfAKindFullHouse(hand, hand.cards.map(_.rank).distinct.sorted))
       .map(straight)
       .map(createBackHand)
       .map(calcHandStrength)
@@ -27,6 +27,7 @@ class StrengthCalculator {
     case ThreeOfAKind(_, _) => hand.copy(backHand = hand.cards.filterNot(_.rank == hand.combo.rank))
     case TwoPair(firstRank, secondRank, _) => hand.copy(backHand = hand.cards.filter(card => card.rank != firstRank && card.rank != secondRank))
     case OnePair(_, _) => hand.copy(backHand = hand.cards.filterNot(_.rank == hand.combo.rank))
+    case Flush(_, _) => hand.copy(backHand = hand.cards.filterNot(_.rank == hand.combo.rank))
     case Empty(_, _) => hand.copy(backHand = hand.cards)
     case _ => hand
   }
@@ -47,7 +48,7 @@ class StrengthCalculator {
 
   private def calcHandStrength(hand: Hand): Hand = hand.combo match {
     case Empty(_,_) => hand.copy(strength = hand.cards.map(_.rank).sum)
-    case _ => hand.copy(strength = hand.combo.rank * hand.combo.multiplier)
+    case _ => hand.copy(strength = hand.combo.rank * hand.combo.multiplier + hand.cards.map(_.rank).sum)
   }
 
   private def flush(hand: Hand): Hand = {
@@ -85,28 +86,28 @@ class StrengthCalculator {
   }
 
   @tailrec
-  private def threeOfAKindFullHouse(hand: Hand, rank: Int): Hand = {
-      if (rank == 15) hand
-      else if (hand.cards.count(_.rank == rank).equals(3)) {
-        threeOfAKindFullHouse(hand.copy(combo = fullHouse(hand, rank)), rank + 1)
+  private def threeOfAKindFullHouse(hand: Hand, ranks: List[Int]): Hand = {
+      if (ranks.isEmpty) hand
+      else if (hand.cards.count(_.rank == ranks.head).equals(3)) {
+        threeOfAKindFullHouse(hand.copy(combo = fullHouse(hand, ranks)), ranks.tail)
       }
-      else threeOfAKindFullHouse(hand, rank + 1)
+      else threeOfAKindFullHouse(hand, ranks.tail)
   }
 
   @tailrec
-  private def onePairTwoPairFourOfAKindFullHouse(hand: Hand, rank: Int): Hand = {
-    if (rank == 15) hand
-    else if (hand.cards.count(_.rank == rank).equals(2)) {
-      onePairTwoPairFourOfAKindFullHouse(hand.copy(combo = fullHouse(hand, rank)), rank + 1)
+  private def onePairTwoPairFourOfAKindFullHouse(hand: Hand, ranks: List[Int]): Hand = {
+    if (ranks.isEmpty) hand
+    else if (hand.cards.count(_.rank == ranks.head).equals(2)) {
+      onePairTwoPairFourOfAKindFullHouse(hand.copy(combo = fullHouse(hand, ranks)), ranks.tail)
     }
-    else onePairTwoPairFourOfAKindFullHouse(hand, rank + 1)
+    else onePairTwoPairFourOfAKindFullHouse(hand, ranks.tail)
   }
 
-  private def fullHouse (hand: Hand, rank: Int): Combo = hand.combo match {
-    case ThreeOfAKind(_, _) => FullHouse(hand.combo.rank, rank)
-    case OnePair(_, _) if hand.combo.rank == rank => FourOfAKind(rank)
-    case OnePair(_, _) if hand.combo.rank != rank => TwoPair(hand.combo.rank, rank)
-    case _ => OnePair(rank)
+  private def fullHouse (hand: Hand, ranks: List[Int]): Combo = hand.combo match {
+    case ThreeOfAKind(_, _) => FullHouse(hand.combo.rank, ranks.head)
+    case OnePair(_, _) if hand.combo.rank == ranks.head => FourOfAKind(ranks.head)
+    case OnePair(_, _) if hand.combo.rank != ranks.head => TwoPair(hand.combo.rank, ranks.head)
+    case _ => OnePair(ranks.head)
   }
 
 }
