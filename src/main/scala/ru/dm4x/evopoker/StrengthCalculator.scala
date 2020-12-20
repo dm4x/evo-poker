@@ -12,27 +12,27 @@ class StrengthCalculator {
    * @return total strength of cards in hand
    */
   def evaluate(hands: List[Hand]): List[Hand] = {
-    hands.sortBy(_.strength)
+    hands
       .map(flush)
       .map(onePairTwoPairFourOfAKindFullHouse(_, 0))
       .map(threeOfAKindFullHouse(_, 0))
       .map(straight)
       .map(calcHandStrength)
+      .sortWith(compareFunc)
   }
 
   private def calcHandStrength(hand: Hand): Hand = {
     // считаем силу руки, сила карт уже посчитана
-
+    val handStrength = hand.combo.rank * hand.combo.multiplier
+    Hand(hand.inHand, hand.cards, handStrength, hand.combo)
   }
-
-
 
   private def flush(hand: Hand): Hand = {
     val maxRank = hand.cards.maxBy(_.rank).rank
     val isFlush = hand.cards.map(_.suit).map(isFlushSuit(hand, _)).find(_ == true).getOrElse(false)
     (hand.combo, isFlush) match {
-      case (Straight(_), true) => Hand(hand.inHand, hand.cards, hand.strength, StraightFlush(maxRank))
-      case (Straight(_), false) => Hand(hand.inHand, hand.cards, hand.strength, Straight(maxRank))
+      case (Straight(_, _), true) => Hand(hand.inHand, hand.cards, hand.strength, StraightFlush(maxRank))
+      case (Straight(_, _), false) => Hand(hand.inHand, hand.cards, hand.strength, Straight(maxRank))
       case (_, true) => Hand(hand.inHand, hand.cards, hand.strength, Flush(maxRank))
       case _ => hand
     }
@@ -45,10 +45,10 @@ class StrengthCalculator {
 
   private def straight(hand: Hand): Hand = {
     val maxRank = hand.cards.maxBy(_.rank).rank
-    val isStraight = isStraightSuit(0, hand.cards.map(_.rank), maxRank, result = false)
+    val isStraight = isStraightSuit(0, hand.cards.sortBy(_.rank).map(_.rank), maxRank, result = false)
     (hand.combo, isStraight) match {
-      case (Flush(_), true) => Hand(hand.inHand, hand.cards, hand.strength, StraightFlush(maxRank))
-      case (Flush(_), false) => Hand(hand.inHand, hand.cards, hand.strength, Flush(maxRank))
+      case (Flush(_, _), true) => Hand(hand.inHand, hand.cards, hand.strength, StraightFlush(maxRank))
+      case (Flush(_, _), false) => Hand(hand.inHand, hand.cards, hand.strength, Flush(maxRank))
       case (_, true) => Hand(hand.inHand, hand.cards, hand.strength, Straight(maxRank))
       case _ => hand
     }
@@ -80,9 +80,9 @@ class StrengthCalculator {
   }
 
   private def fullHouse (hand: Hand, rank: Int): Combo = hand.combo match {
-    case ThreeOfAKind(_) => FullHouse(hand.combo.rank, rank)
-    case OnePair(_) if hand.combo.rank == rank => FourOfAKind(rank)
-    case OnePair(_) => TwoPair(hand.combo.rank, rank)
+    case ThreeOfAKind(_, _) => FullHouse(hand.combo.rank, rank)
+    case OnePair(_, _) if hand.combo.rank == rank => FourOfAKind(rank)
+    case OnePair(_, _) => TwoPair(hand.combo.rank, rank)
     case _ => hand.combo
   }
 
