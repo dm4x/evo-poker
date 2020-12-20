@@ -10,7 +10,7 @@ object Solver {
   def process(line: String): String = {
     val ErrorPrefix = "Error: "
 
-    line.toLowerCase.split("\\s+").toList match {
+    line.split("\\s+").toList match {
       case "texas-holdem" :: board :: hands => ErrorPrefix + "not created yet"
       case "omaha-holdem" :: board :: hands => ErrorPrefix + "not created yet"
       case "five-card-draw" :: hands => fiveCard(hands).getOrElse(ErrorPrefix + "wrong data in line")
@@ -21,7 +21,7 @@ object Solver {
 
   def fiveCard(inHands: List[String]): Option[String] = {
     val hands: List[Hand] = inHands.map(splitHand)
-    val s = new StrengthCalculator().evaluate(hands).sortBy(_.strength).map(_.inHand).toString()
+    val s = new StrengthCalculator().evaluate(hands).map(_.inHand).toString()
     Option(s)
   }
 
@@ -42,12 +42,12 @@ object Solver {
   private def cardScore(cardRank: Char): Int = {
     val digits: Regex = "\\d".r
     cardRank match {
-      case 'a' => 14
-      case 'k' => 13
-      case 'q' => 12
-      case 'j' => 11
-      case 't' => 10
-      case digits() => cardRank.toInt
+      case 'A' => 14
+      case 'K' => 13
+      case 'Q' => 12
+      case 'J' => 11
+      case 'T' => 10
+      case digits() => cardRank.toInt - 48
       case _ => 0
     }
   }
