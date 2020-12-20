@@ -2,7 +2,6 @@
 import org.scalatest.funsuite.AnyFunSuite
 import ru.dm4x.evopoker.Solver
 
-
 class SolverTest extends AnyFunSuite {
   private val testingClass = Solver
   private val testingClassName: String = testingClass.getClass.getName

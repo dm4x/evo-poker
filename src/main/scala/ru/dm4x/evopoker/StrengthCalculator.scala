@@ -5,7 +5,6 @@ import ru.dm4x.evopoker.entity.{Card, Combo, Empty, Flush, FourOfAKind, FullHous
 import scala.annotation.tailrec
 
 class StrengthCalculator {
-
   /**
    *
    * @param hand a list of `Card` in hand
@@ -146,5 +145,4 @@ class StrengthCalculator {
     case OnePair(_, _) if hand.backHand.count(_.rank == ranks.head).equals(3) => hand.copy(combo = FullHouse(ranks.head, hand.combo.rank))
     case _ => fullHouse(hand, ranks.tail)
   }
-
 }
