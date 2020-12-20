@@ -19,7 +19,7 @@ class StrengthCalculator {
       .map(hand => four(hand, hand.cards.map(_.rank).distinct.sorted))
       .map(hand => twoPairs(hand, hand.backHand.map(_.rank).distinct.sorted))
       .map(hand => fullHouse(hand, hand.backHand.map(_.rank).distinct.sorted))
-      .map(straight)
+      .map(straightWithBothAces)
       .map(createBackHand)
       .map(calcHandStrength)
       .sortBy(_.strength)
@@ -69,6 +69,22 @@ class StrengthCalculator {
     if (hand.cards.count(_.suit == suit) == 5) true
     else false
   }
+
+  private def straightWithBothAces(hand: Hand): Hand = {
+    val ranks = hand.cards.sortBy(_.rank).map(_.rank)
+    val ace = hand.cards.filter(_.rank == 14)
+    val restCards = hand.cards.filter(_.rank != 14)
+
+    val innerHand = if (ranks.contains(2)
+                     && ranks.contains(3)
+                     && ranks.contains(4)
+                     && ranks.contains(5)
+                     && ranks.contains(14)
+    ) hand.copy(cards = ace.head.copy(rank = 1) :: restCards)
+    else hand
+    straight(innerHand)
+  }
+
 
   private def straight(hand: Hand): Hand = {
     val maxRank = hand.cards.maxBy(_.rank).rank
