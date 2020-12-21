@@ -26,6 +26,11 @@ class StrengthCalculator {
       .sortWith(compareBackHands)
   }
 
+  /**
+   * filling a Card.backHand
+   * @param hand base hand with combo
+   * @return base hand with other cards (not used in combo) in Card.backHand
+   */
   private def createBackHand(hand: Hand): Hand = hand.combo match {
     case FourOfAKind(_, _) => hand.copy(backHand = hand.cards.filterNot(_.rank == hand.combo.rank))
     case ThreeOfAKind(_, _) => hand.copy(backHand = hand.cards.filterNot(_.rank == hand.combo.rank))
@@ -36,11 +41,24 @@ class StrengthCalculator {
     case _ => hand
   }
 
+  /**
+   * comparing two sorted hands like "Ah Tc 2s" and "Kc 8h 9d"
+   * comparing backHands only when combos of hand are equal
+   * @param left first hand
+   * @param right second hand
+   * @return true if left lesser than right
+   */
   private def compareBackHands(left: Hand, right: Hand): Boolean = {
     if (left.strength == right.strength) compareBackHands(left.backHand.sortBy(_.rank), right.backHand.sortBy(_.rank))
     else false
   }
 
+  /**
+   *
+   * @param left a list of cards, sorted by rank
+   * @param right  a list of cards, sorted by rank
+   * @return true if left lesser than right
+   */
   @tailrec
   private def compareBackHands(left: List[Card], right: List[Card]): Boolean = (left, right) match {
     case (left, right) if left.isEmpty || right.isEmpty => true
@@ -49,11 +67,21 @@ class StrengthCalculator {
     case _ => false
   }
 
+  /**
+   * calculate strength of Hand (card's strengths calculated already)
+   * @param hand
+   * @return Hand with filled strength param
+   */
   private def calcHandStrength(hand: Hand): Hand = hand.combo match {
     case Empty(_,_) => hand.copy(strength = hand.cards.map(_.rank).sum)
     case _ => hand.copy(strength = hand.combo.rank * hand.combo.multiplier + hand.cards.map(_.rank).sum)
   }
 
+  /**
+   * check for Flush combo
+   * @param hand
+   * @return Hand with combo filled with Flush
+   */
   private def flush(hand: Hand): Hand = {
     val maxRank = hand.cards.maxBy(_.rank).rank
     val isFlush = hand.cards.map(_.suit).map(isFlushSuit(hand, _)).find(_ == true).getOrElse(false)
@@ -70,6 +98,11 @@ class StrengthCalculator {
     else false
   }
 
+  /**
+   * that code check a low straight with ace like As2h3d4c5s and than do the same check like other straights
+   * @param hand
+   * @return Hand with combo filled with straight
+   */
   private def straightWithBothAces(hand: Hand): Hand = {
     val ranks = hand.cards.sortBy(_.rank).map(_.rank)
     val ace = hand.cards.filter(_.rank == 14)
@@ -86,6 +119,11 @@ class StrengthCalculator {
   }
 
 
+  /**
+   * filler for straight and straight flush
+   * @param hand
+   * @return Hand with filled combo
+   */
   private def straight(hand: Hand): Hand = {
     val maxRank = hand.cards.maxBy(_.rank).rank
     val ranks = hand.cards.sortBy(_.rank).map(_.rank)
@@ -100,6 +138,14 @@ class StrengthCalculator {
     }
   }
 
+  /**
+   * main straight check
+   * @param prev previous rank
+   * @param ranks ranks of cards in hand, sorted
+   * @param highRank of hand to know when need to stop
+   * @param counter to accumulate positive check
+   * @return
+   */
   @tailrec
   private def isStraightSuit(prev: Int, ranks: List[Int], highRank: Int, counter: Int): Boolean = {
     if (ranks.isEmpty && counter == 5) true
@@ -108,6 +154,12 @@ class StrengthCalculator {
     else isStraightSuit(ranks.head, ranks.tail, highRank, 0)
   }
 
+  /**
+   * check for ThreeOfAKind combo
+   * @param hand
+   * @param ranks of hand to iterate on them
+   * @return Hand with combo filled with ThreeOfAKind
+   */
   @tailrec
   private def threeOfAKind(hand: Hand, ranks: List[Int]): Hand = {
       if (ranks.isEmpty) hand
@@ -122,6 +174,12 @@ class StrengthCalculator {
       else threeOfAKind(hand, ranks.tail)
   }
 
+  /**
+   * check for OnePair combo
+   * @param hand
+   * @param ranks of hand to iterate on them
+   * @return Hand with combo filled with OnePair
+   */
   @tailrec
   private def onePair(hand: Hand, ranks: List[Int]): Hand = {
     if (ranks.isEmpty) hand
@@ -135,6 +193,12 @@ class StrengthCalculator {
     else onePair(hand, ranks.tail)
   }
 
+  /**
+   * check for TwoPair combo
+   * @param hand
+   * @param ranks of hand to iterate on them
+   * @return Hand with combo filled with TwoPair
+   */
   private def twoPairs(hand: Hand, ranks: List[Int]): Hand = hand.combo match {
     case OnePair(_, _) if hand.combo.rank != ranks.head && hand.backHand.count(_.rank == ranks.head).equals(2) => hand.copy(
       combo = TwoPair(hand.combo.rank, ranks.head),
@@ -142,6 +206,12 @@ class StrengthCalculator {
     case _ => hand
   }
 
+  /**
+   * check for FourOfAKind combo
+   * @param hand
+   * @param ranks of hand to iterate on them
+   * @return Hand with combo filled with FourOfAKind
+   */
   @tailrec
   private def four(hand: Hand, ranks: List[Int]): Hand = {
     if (ranks.isEmpty) hand
@@ -155,6 +225,12 @@ class StrengthCalculator {
     else four(hand, ranks.tail)
   }
 
+  /**
+   * check for FullHouse combo
+   * @param hand
+   * @param ranks of hand to iterate on them
+   * @return Hand with combo filled with Fullhouse
+   */
   @tailrec
   private def fullHouse(hand: Hand, ranks: List[Int]): Hand = hand.combo match {
     case _ if ranks.isEmpty => hand
