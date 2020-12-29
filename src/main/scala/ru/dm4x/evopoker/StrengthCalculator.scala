@@ -49,7 +49,7 @@ class StrengthCalculator {
    * @return true if left lesser than right
    */
   private def compareBackHands(left: Hand, right: Hand): Boolean = {
-    if (left.strength == right.strength) compareBackHands(left.backHand.sortBy(_.rank), right.backHand.sortBy(_.rank))
+    if (left.strength == right.strength) compareBackHands(left.backHand.sortBy(_.rank).reverse, right.backHand.sortBy(_.rank).reverse)
     else false
   }
 
@@ -73,7 +73,7 @@ class StrengthCalculator {
    * @return Hand with filled strength param
    */
   private def calcHandStrength(hand: Hand): Hand = hand.combo match {
-    case Empty(_,_) => hand.copy(strength = hand.cards.map(_.rank).sum)
+    case Empty(_,_) => hand.copy(backHand = hand.cards)
     case _ => hand.copy(strength = hand.combo.rank * hand.combo.multiplier + hand.cards.map(_.rank).sum)
   }
 
