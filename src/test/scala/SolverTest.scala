@@ -127,18 +127,33 @@ class SolverTest extends AnyFunSuite {
         equals "KcTdJc8h9d Ah2s3h4c5h")
   }
 
-  test(s"$testingClassName: process: two two-pair, different ranks") {
+  test(s"$testingClassName: process: two one-pair, different ranks") {
     assert(
       testingClass.process("five-card-draw 6d7c5c7dTh 8dTdAs6s9d 3c2cTs8h2h")
         equals "8dTdAs6s9d 3c2cTs8h2h 6d7c5c7dTh")
   }
 
-  test(s"$testingClassName: process: two two-pair") {
+  test(s"$testingClassName: process: two one-pair") {
     assert(
       testingClass.process("five-card-draw 3c2cTs8h2h 7s9c4cJsKd 8s9hAc5s3h 6d7c5c7dTh Qh2sKh7hJd 3sTc9s6cJc 2d6h4hKcAh 8dTdAs6s9d 3dKs4d8c5h")
         equals "3sTc9s6cJc 3dKs4d8c5h 7s9c4cJsKd Qh2sKh7hJd 8s9hAc5s3h 8dTdAs6s9d 2d6h4hKcAh 3c2cTs8h2h 6d7c5c7dTh")
   }
 
+  test(s"$testingClassName: process: two two-pair 1") {
+    assert(
+      testingClass.process("five-card-draw 3h2dAcAs3d 3c2cTs8h2h 2d6h4hKcAh 3d9s9dQcQh")
+        equals "2d6h4hKcAh 3c2cTs8h2h 3d9s9dQcQh 3h2dAcAs3d")
+  }
 
+  test(s"$testingClassName: process: two two-pair 2") {
+    assert(
+      testingClass.process("five-card-draw 3sTc9s6cJc 3d9s9dQcQh 3dKs4d8c5h 7s9c4cJsKd Qh2sKh7hJd 2d8c8hAcAh")
+        equals "3sTc9s6cJc 3dKs4d8c5h 7s9c4cJsKd Qh2sKh7hJd 3d9s9dQcQh 2d8c8hAcAh")
+  }
 
+  test(s"$testingClassName: process: two two-pair 3") {
+    assert(
+      testingClass.process("five-card-draw 3sTc9s6cJc 3dKs4d8c5h 3d2c2hAcAh 7s9c4cJsKd Qh2sKh7hJd 4cQsQdKcKh")
+        equals "3sTc9s6cJc 3dKs4d8c5h 7s9c4cJsKd Qh2sKh7hJd 4cQsQdKcKh 3d2c2hAcAh")
+  }
 }
