@@ -147,8 +147,8 @@ class SolverTest extends AnyFunSuite {
 
   test(s"$testingClassName: process: two two-pair 2") {
     assert(
-      testingClass.process("five-card-draw 3sTc9s6cJc 3d9s9dQcQh 3dKs4d8c5h 7s9c4cJsKd Qh2sKh7hJd 2d8c8hAcAh")
-        equals "3sTc9s6cJc 3dKs4d8c5h 7s9c4cJsKd Qh2sKh7hJd 3d9s9dQcQh 2d8c8hAcAh")
+      testingClass.process("five-card-draw 3h4h2d3d6h 8c3c5h8s6d Ac9cTsJhAh QcQd4c9h5c Kc5d4dJd6c TcKd4s2c2s 9sQh9dThQs As8h3s8dAd 2hJsJc7cKh")
+        equals "Kc5d4dJd6c TcKd4s2c2s 3h4h2d3d6h 8c3c5h8s6d 2hJsJc7cKh QcQd4c9h5c Ac9cTsJhAh 9sQh9dThQs As8h3s8dAd")
   }
 
   test(s"$testingClassName: process: two two-pair 3") {

@@ -12,7 +12,7 @@ class StrengthCalculator {
    * @return total strength of cards in hand
    */
   def evaluate(hands: List[Hand]): List[Hand] = {
-    hands
+    val handsList :List[Hand] = hands
       .map(flush)
       .map(hand => onePair(hand, hand.cards.map(_.rank).distinct.sorted))
       .map(hand => threeOfAKind(hand, hand.cards.map(_.rank).distinct.sorted))
@@ -24,6 +24,9 @@ class StrengthCalculator {
       .map(calcHandStrength)
       .sortBy(_.strength)
       .sortWith(compareBackHands)
+
+    handsList
+
   }
 
   /**
@@ -200,7 +203,7 @@ class StrengthCalculator {
    * @return Hand with combo filled with TwoPair
    */
   private def twoPairs(hand: Hand, ranks: List[Int]): Hand = hand.combo match {
-    case OnePair(_, _) if hand.combo.rank != ranks.head && hand.backHand.count(_.rank == ranks.head).equals(2) => hand.copy(
+    case OnePair(_, _) if hand.combo.rank != ranks.head && hand.backHand.groupBy(_.rank).exists(_._2.size.equals(2)) => hand.copy(
       combo = TwoPair(hand.combo.rank, ranks.head),
       backHand = hand.backHand.filter(_.rank != ranks.head))
     case _ => hand
